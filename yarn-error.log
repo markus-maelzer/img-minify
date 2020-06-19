@@ -1,0 +1,48 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\Sky6\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add sharp
+
+PATH: 
+  C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\Docker\Docker\Resources\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Program Files\PuTTY\;C:\WINDOWS\System32\OpenSSH\;C:\xampp\php;C:\ProgramData\ComposerSetup\bin;C:\Program Files\nodejs\;C:\Users\Sky6\AppData\Local\Programs\Python\Python37-32\Scripts\;C:\Users\Sky6\AppData\Local\Programs\Python\Python37-32\;C:\Users\Sky6\.cargo\bin;C:\Users\Sky6\AppData\Local\Microsoft\WindowsApps;C:\Users\Sky6\AppData\Local\atom\bin;C:\ffmpeg\bin;C:\Program Files\Heroku\bin;C:\Users\Sky6\AppData\Local\Microsoft\WindowsApps;C:\Users\Sky6\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Sky6\AppData\Roaming\Composer\vendor\bin;C:\Exercism;C:\Users\Sky6\AppData\Roaming\npm
+
+Yarn version: 
+  1.16.0
+
+Node version: 
+  12.5.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/sharp: tunneling socket could not be established, cause=getaddrinfo ENOTFOUND proxyserver
+      at ClientRequest.onError (C:\Users\Sky6\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141076:17)
+      at Object.onceWrapper (events.js:288:20)
+      at ClientRequest.emit (events.js:200:13)
+      at Socket.socketErrorListener (_http_client.js:402:9)
+      at Socket.emit (events.js:200:13)
+      at emitErrorNT (internal/streams/destroy.js:91:8)
+      at emitErrorAndCloseNT (internal/streams/destroy.js:59:3)
+      at processTicksAndRejections (internal/process/task_queues.js:74:11)
+
+npm manifest: 
+  {
+    "name": "minify",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "sharp": "^0.22.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
