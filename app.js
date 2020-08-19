@@ -4,14 +4,8 @@ const sharpFullHD = sharp();
 
 const generalName = 'gImg_';
 
-// const width = 780;
-// const height = 550;
-// const width = 585;
-// const height = 760;
-// const width = 1300;
-// const height = 600;
-const width = 900;
-const height = 1200;
+const width = 1920;
+const height = 1080;
 const options = {
   fit: 'cover',
   // position: 'left bottom'
