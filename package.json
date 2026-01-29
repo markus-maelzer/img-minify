@@ -2,15 +2,33 @@
   "name": "minify",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "electron .",
+    "dist": "electron-builder",
+    "build": "electron-builder",
+    "pub": "electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.synelution.minify",
+    "win": {
+      "target": "nsis"
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://example.com/auto-updates"
+    }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "add": "^2.0.6",
+    "electron-updater": "^6.6.2",
     "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^26.0.12"
   }
 }
