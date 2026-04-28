@@ -65,22 +65,23 @@ async function processImages(inputDir, options, onLog) {
         background: options.background || 'transparent',
       };
 
-      let pipeline = sharp(path.join(inputDir, img)).resize(
-        width,
-        height,
-        sharpOptions
-      );
+      const q = parseInt(options.quality) || 80;
 
-      // Explicitly set format if it's not the original container we are just saving
-      // Although toFile infers, explicit toFormat can apply format-specific optimizations
+      let pipeline = sharp(path.join(inputDir, img));
+
+      if (!options.keepDimensions) {
+        pipeline = pipeline.resize(width, height, sharpOptions);
+      }
+
       if (targetFormat === 'webp') {
-        pipeline = pipeline.webp();
+        pipeline = pipeline.webp({ quality: q });
       } else if (targetFormat === 'jpeg' || targetFormat === 'jpg') {
-        pipeline = pipeline.jpeg();
+        pipeline = pipeline.jpeg({ quality: q, mozjpeg: true });
       } else if (targetFormat === 'png') {
-        pipeline = pipeline.png();
+        const compressionLevel = Math.round(9 - (q / 100) * 9);
+        pipeline = pipeline.png({ compressionLevel });
       } else if (targetFormat === 'avif') {
-        pipeline = pipeline.avif();
+        pipeline = pipeline.avif({ quality: q });
       }
       // If original/other, we rely on toFile or input format.
 

@@ -28,7 +28,8 @@
         font-weight: bold;
         font-size: 0.9rem;
       }
-      input[type='number'] {
+      input[type='number'],
+      input[type='text'] {
         width: 100%;
         padding: 8px;
         box-sizing: border-box;
@@ -64,6 +65,7 @@
         border-radius: 4px;
         background: white;
         padding: 10px;
+        box-sizing: border-box;
         overflow-y: auto;
         font-family: monospace;
         font-size: 0.85rem;
@@ -120,6 +122,55 @@
         padding: 2px 8px;
         font-size: 0.8rem;
       }
+      #btnStart {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.05rem;
+        margin-top: 5px;
+      }
+      #btnSelect.drag-over {
+        background-color: #0056b3;
+        outline: 2px dashed #fff;
+        outline-offset: -4px;
+      }
+      input[type='range'] {
+        width: 100%;
+        accent-color: #007bff;
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0 2px;
+      }
+      .checkbox-row input[type='checkbox'] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+      .checkbox-row label {
+        margin: 0;
+        font-weight: normal;
+        cursor: pointer;
+      }
+      .quality-presets {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .quality-presets button {
+        flex: 1;
+        padding: 4px 0;
+        font-size: 0.82rem;
+        background: #e9ecef;
+        color: #333;
+        border: 1px solid #ccc;
+      }
+      .quality-presets button:hover {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
     </style>
   </head>
   <body>
@@ -131,14 +182,31 @@
       <div id="selectedPath">No folder selected</div>
     </div>
 
-    <div class="control-group flex-row">
-      <div class="flex-col">
-        <label for="width">Width (px)</label>
-        <input type="number" id="width" value="1080" />
+    <div class="control-group">
+      <label for="quality">Quality: <span id="qualityValue">80</span></label>
+      <input type="range" id="quality" min="1" max="100" value="80" />
+      <div class="quality-presets">
+        <button type="button" onclick="setQuality(70)">70</button>
+        <button type="button" onclick="setQuality(80)">80</button>
+        <button type="button" onclick="setQuality(90)">90</button>
+        <button type="button" onclick="setQuality(100)">100</button>
       </div>
-      <div class="flex-col">
-        <label for="height">Height (px)</label>
-        <input type="number" id="height" value="1080" />
+    </div>
+
+    <div class="control-group">
+      <div class="flex-row">
+        <div class="flex-col">
+          <label for="width">Width (px)</label>
+          <input type="number" id="width" value="1080" />
+        </div>
+        <div class="flex-col">
+          <label for="height">Height (px)</label>
+          <input type="number" id="height" value="1080" />
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="keepDimensions" />
+        <label for="keepDimensions">Keep original dimensions (only optimize, ignore width/height)</label>
       </div>
     </div>
 
@@ -186,12 +254,6 @@
           type="text"
           id="background"
           placeholder="e.g. #ffffff or transparent"
-          style="
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-          "
         />
       </div>
     </div>

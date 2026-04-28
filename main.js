@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { processImages } = require('./image-processor');
 
 // Auto-updater wrap to prevent crash in dev/bad env
@@ -58,8 +59,17 @@ ipcMain.handle('select-folder', async () => {
   }
 });
 
+ipcMain.handle('validate-folder', async (_event, folderPath) => {
+  try {
+    const stat = fs.statSync(folderPath);
+    return stat.isDirectory();
+  } catch {
+    return false;
+  }
+});
+
 ipcMain.handle('start-processing', async (event, args) => {
-  const { inputDir, width, height, fit, background, format } = args;
+  const { inputDir, width, height, fit, background, format, quality, keepDimensions } = args;
 
   // Define log callback
   const onLog = (msg) => {
@@ -69,6 +79,6 @@ ipcMain.handle('start-processing', async (event, args) => {
     }
   };
 
-  await processImages(inputDir, { width, height, fit, background, format }, onLog);
+  await processImages(inputDir, { width, height, fit, background, format, quality, keepDimensions }, onLog);
   return 'Done';
 });

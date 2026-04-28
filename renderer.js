@@ -6,6 +6,9 @@ const inputHeight = document.getElementById('height');
 const inputFit = document.getElementById('fit');
 const inputFormat = document.getElementById('format');
 const inputBackground = document.getElementById('background');
+const inputQuality = document.getElementById('quality');
+const qualityValue = document.getElementById('qualityValue');
+const checkKeepDimensions = document.getElementById('keepDimensions');
 const logArea = document.getElementById('logArea');
 
 // New Elements
@@ -24,6 +27,25 @@ let currentPath = null;
 let history = [];
 let presets = [];
 
+// Live quality label update
+inputQuality.addEventListener('input', () => {
+  qualityValue.textContent = inputQuality.value;
+});
+
+window.setQuality = (val) => {
+  inputQuality.value = val;
+  qualityValue.textContent = val;
+};
+
+// Disable/enable width+height when keepDimensions toggled
+checkKeepDimensions.addEventListener('change', () => {
+  const disabled = checkKeepDimensions.checked;
+  inputWidth.disabled = disabled;
+  inputHeight.disabled = disabled;
+  inputWidth.style.opacity = disabled ? '0.4' : '';
+  inputHeight.style.opacity = disabled ? '0.4' : '';
+});
+
 // Load settings and data
 window.addEventListener('DOMContentLoaded', () => {
   const savedWidth = localStorage.getItem('img-minify-width');
@@ -32,12 +54,25 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedFormat = localStorage.getItem('img-minify-format');
   const savedBg = localStorage.getItem('img-minify-bg');
   const savedPath = localStorage.getItem('img-minify-path');
+  const savedQuality = localStorage.getItem('img-minify-quality');
+  const savedKeepDim = localStorage.getItem('img-minify-keepDim');
 
   if (savedWidth) inputWidth.value = savedWidth;
   if (savedHeight) inputHeight.value = savedHeight;
   if (savedFit) inputFit.value = savedFit;
   if (savedFormat) inputFormat.value = savedFormat;
   if (savedBg) inputBackground.value = savedBg;
+  if (savedQuality) {
+    inputQuality.value = savedQuality;
+    qualityValue.textContent = savedQuality;
+  }
+  if (savedKeepDim === 'true') {
+    checkKeepDimensions.checked = true;
+    inputWidth.disabled = true;
+    inputHeight.disabled = true;
+    inputWidth.style.opacity = '0.4';
+    inputHeight.style.opacity = '0.4';
+  }
 
   if (savedPath) {
     currentPath = savedPath;
@@ -80,10 +115,11 @@ function renderHistory() {
 
       const div = document.createElement('div');
       div.className = 'list-item';
+      const dimLabel = item.keepDimensions
+        ? 'orig. size'
+        : `${item.width}x${item.height}`;
       div.innerHTML = `
-        <span onclick="applyHistory(${originalIndex})">${item.width}x${
-        item.height
-      } (${item.fit}, ${item.format || 'webp'})</span>
+        <span onclick="applyHistory(${originalIndex})">${dimLabel} (${item.fit}, ${item.format || 'webp'}, q${item.quality || 80})</span>
         <span class="preset-actions" onclick="deleteHistoryItem(${originalIndex})">×</span>
       `;
       div.title = `Bg: ${item.background || 'none'}`;
@@ -135,33 +171,45 @@ function applySettings(settings) {
   inputFit.value = settings.fit;
   inputFormat.value = settings.format || 'webp';
   inputBackground.value = settings.background;
+
+  const q = settings.quality || 80;
+  inputQuality.value = q;
+  qualityValue.textContent = q;
+
+  const keepDim = !!settings.keepDimensions;
+  checkKeepDimensions.checked = keepDim;
+  inputWidth.disabled = keepDim;
+  inputHeight.disabled = keepDim;
+  inputWidth.style.opacity = keepDim ? '0.4' : '';
+  inputHeight.style.opacity = keepDim ? '0.4' : '';
+
   log(
     `Applied settings: ${settings.width}x${settings.height}, ${settings.fit}, ${
       settings.format || 'webp'
-    }`
+    }, q${q}`,
   );
 }
 
 function addToHistory(settings) {
-  // Remove identical simplified object if exists to avoid dupes at top
-  // simple check
   const newEntry = {
     width: settings.width,
     height: settings.height,
     fit: settings.fit,
     format: settings.format,
     background: settings.background,
+    quality: settings.quality,
+    keepDimensions: settings.keepDimensions,
   };
 
-  // Filter out identicals to promote unique history or just push top?
-  // Let's just push to top and limit to 10
   history = history.filter(
     (h) =>
       h.width !== newEntry.width ||
       h.height !== newEntry.height ||
       h.fit !== newEntry.fit ||
       h.format !== newEntry.format ||
-      h.background !== newEntry.background
+      h.background !== newEntry.background ||
+      h.quality !== newEntry.quality ||
+      h.keepDimensions !== newEntry.keepDimensions,
   );
 
   history.push(newEntry);
@@ -185,7 +233,10 @@ btnClearHistory.addEventListener('click', () => {
 
 btnSavePreset.addEventListener('click', () => {
   savePresetArea.style.display = 'block';
-  newPresetName.value = `${inputWidth.value}x${inputHeight.value} (${inputFit.value}, ${inputFormat.value})`;
+  const dimPart = checkKeepDimensions.checked
+    ? 'orig'
+    : `${inputWidth.value}x${inputHeight.value}`;
+  newPresetName.value = `${dimPart} (${inputFit.value}, ${inputFormat.value}, q${inputQuality.value})`;
   newPresetName.focus();
 });
 
@@ -203,6 +254,8 @@ btnConfirmSave.addEventListener('click', () => {
       fit: inputFit.value,
       format: inputFormat.value,
       background: inputBackground.value,
+      quality: inputQuality.value,
+      keepDimensions: checkKeepDimensions.checked,
     });
     saveData();
     renderPresets();
@@ -224,6 +277,45 @@ btnSelect.addEventListener('click', async () => {
   }
 });
 
+btnSelect.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  btnSelect.classList.add('drag-over');
+});
+
+btnSelect.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  btnSelect.classList.remove('drag-over');
+});
+
+btnSelect.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  btnSelect.classList.remove('drag-over');
+
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+
+  const droppedPath = window.api.getPathForFile(file);
+  if (!droppedPath) {
+    log('Error: Could not resolve dropped path.');
+    return;
+  }
+
+  const isDir = await window.api.validateFolder(droppedPath);
+  if (!isDir) {
+    log('Error: Dropped item is not a folder. Please drop a folder.');
+    return;
+  }
+
+  currentPath = droppedPath;
+  selectedPathDisplay.textContent = droppedPath;
+  btnStart.removeAttribute('disabled');
+  log(`Selected folder (drag & drop): ${droppedPath}`);
+  localStorage.setItem('img-minify-path', droppedPath);
+});
+
 btnStart.addEventListener('click', async () => {
   if (!currentPath) return;
 
@@ -232,8 +324,10 @@ btnStart.addEventListener('click', async () => {
   const fit = inputFit.value;
   const format = inputFormat.value;
   const background = inputBackground.value;
+  const quality = parseInt(inputQuality.value) || 80;
+  const keepDimensions = checkKeepDimensions.checked;
 
-  if (isNaN(width) || isNaN(height)) {
+  if (!keepDimensions && (isNaN(width) || isNaN(height))) {
     log('Error: Invalid dimensions.');
     return;
   }
@@ -244,9 +338,11 @@ btnStart.addEventListener('click', async () => {
   localStorage.setItem('img-minify-fit', fit);
   localStorage.setItem('img-minify-format', format);
   localStorage.setItem('img-minify-bg', background);
+  localStorage.setItem('img-minify-quality', quality);
+  localStorage.setItem('img-minify-keepDim', keepDimensions);
 
   // Add to app history
-  addToHistory({ width, height, fit, format, background });
+  addToHistory({ width, height, fit, format, background, quality, keepDimensions });
 
   btnStart.setAttribute('disabled', 'true');
   btnSelect.setAttribute('disabled', 'true');
@@ -260,6 +356,8 @@ btnStart.addEventListener('click', async () => {
       fit,
       format,
       background,
+      quality,
+      keepDimensions,
     });
     log(result);
   } catch (err) {
